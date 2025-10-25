@@ -1,5 +1,6 @@
 <!-- Hadees Takhreej Assistant (Ala Hazrat Focus) -->
-<!-- Green and White Theme | Voice Input | Virtual Urdu Keyboard -->
+<!-- Green and White Theme | Voice Input | Virtual Urdu Keyboard | API Key Input -->
+<!-- YEH FINAL VERSION HAI. Ise deploy karein. -->
 
 <!DOCTYPE html>
 <html lang="ur" dir="rtl">
@@ -54,6 +55,12 @@
             background-color: #059669;
             color: white;
         }
+        
+        /* Style for LTR text input like API Key */
+        .ltr-text { 
+            text-align: left; 
+            direction: ltr; 
+        }
     </style>
 </head>
 
@@ -73,6 +80,23 @@
 
         <!-- Main Input Form -->
         <main>
+            <!-- API Key Input -->
+            <div class="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <label for="apiKeyInput" class="block text-sm font-semibold mb-2 rtl-text text-yellow-800">
+                    API Key (ضروری):
+                </label>
+                <p class="text-xs text-yellow-700 rtl-text mb-2">
+                    برائے مہربانی، <a href="https://aistudio.google.com/app/apikey" target="_blank" class="font-bold underline hover:text-yellow-900">Google AI Studio سے اپنا مفت API Key</a> حاصل کریں اور نیچے پیسٹ کریں۔
+                </p>
+                <input 
+                    type="password" 
+                    id="apiKeyInput" 
+                    class="inter w-full p-2 border border-yellow-400 rounded-lg focus:ring-primary focus:border-primary ltr-text"
+                    placeholder="Enter your Google AI API Key here..."
+                    aria-label="API Key"
+                >
+            </div>
+
             <div class="mb-6">
                 <label for="hadeesInput" class="block text-lg font-semibold mb-2 rtl-text">
                     حدیث کا متن (Matan) یہاں درج کریں:
@@ -165,11 +189,10 @@
 
     <!-- JavaScript for API Interaction, Voice Input, and Keyboard -->
     <script>
-        // API Key ko khali chhod dein. Canvas isse khud-ba-khud bhar dega.
-        const apiKey = ""; 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        // API Key ko ab user input se liya jayega.
         
         const hadeesInput = document.getElementById('hadeesInput');
+        const apiKeyInput = document.getElementById('apiKeyInput'); // API Key input
         const searchButton = document.getElementById('searchButton');
         const initialMessage = document.getElementById('initialMessage');
         const loadingIndicator = document.getElementById('loadingIndicator');
@@ -217,6 +240,12 @@
 
         async function fetchHadeesInfo() {
             const query = hadeesInput.value.trim();
+            const apiKey = apiKeyInput.value.trim(); // Get API key from input
+
+            if (!apiKey) {
+                displayError("براہ کرم اپنا Google AI API Key اوپر درج کریں (Please enter your Google AI API Key above). <a href='https://aistudio.google.com/app/apikey' target='_blank' class='font-bold underline hover:text-red-700'>یہاں سے حاصل کریں</a>۔");
+                return;
+            }
 
             if (!query) {
                 displayError("براہ کرم تلاش کے لیے کوئی متن درج کریں (Please enter a text to search).");
@@ -231,6 +260,9 @@
             searchButton.disabled = true;
             buttonText.textContent = "تلاش ہو رہی ہے...";
             searchIcon.classList.add('hidden');
+
+            // Construct API URL dynamically
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
 
             // System Instruction (Ala Hazrat Focus)
@@ -296,11 +328,16 @@
                 let message = error.message;
 
                 // Specific check for 402/API Key issue
-                if (message.includes('402') || message.includes('API key not valid')) {
-                    message = `معاف کیجئے! API میں خرابی (Error 402/Key Issue). براہ کرم یقینی بنائیں کہ آپ کا API key aur billing theek se set hai, ya ise Canvas platform par use karein. (Please ensure your API key and billing are correctly set, or use it on the Canvas platform).`;
+                if (message.includes('API key not valid') || message.includes('API_KEY_INVALID')) {
+                    message = `آپ کا API Key غلط ہے (API Key is invalid). براہ کرم اپنا key چیک کریں۔`;
                 } else if (message.includes('400')) {
                     message = `غلط درخواست (Bad Request): آپ کی تلاش کی درخواست میں مسئلہ ہے۔`;
+                } else if (message.includes('caller does not have permission') || message.includes('unregistered callers')) {
+                     message = `خرابی: API Key درج نہیں کی گئی یا غلط ہے (Unregistered/Permission Denied). براہ کرم اوپر API Key درج کریں۔`;
+                } else if (message.includes('402') || message.includes('billing')) {
+                     message = `معاف کیجئے! API میں خرابی (Error 402/Billing Issue). براہ کرم یقینی بنائیں کہ آپ کا Google Cloud billing account active hai.`;
                 }
+
 
                 displayError(`تلاش میں خرابی: ${message}`);
             } finally {
@@ -388,6 +425,7 @@
             recognition = new SpeechRecognition();
             recognition.continuous = true; // Taake woh bolna bandh na kare
             recognition.interimResults = true; // Taake woh real-time result dikhata rahe
+            recognition.lang = 'ur-PK'; // Urdu (Pakistan) ke liye set karein
 
             recognition.onstart = function() {
                 micIcon.classList.add('hidden');
@@ -417,7 +455,7 @@
                 micStopIcon.classList.add('hidden');
                 voiceButton.title = "آواز سے ٹائپ کریں (Error)";
                 // displayError(`آواز سے ٹائپنگ میں خرابی: ${event.error}`); // Do not use displayError here as it clears main content
-                alert(`آواز سے ٹائپنگ میں خرابی: ${event.error}. Tafseel console mein hai.`);
+                // alert(`آواز سے ٹائپنگ میں خرابی: ${event.error}. Tafseel console mein hai.`);
             };
 
             recognition.onend = function() {
@@ -508,3 +546,4 @@
     </script>
 </body>
 </html>
+
