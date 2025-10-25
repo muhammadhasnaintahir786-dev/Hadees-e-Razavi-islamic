@@ -1,0 +1,510 @@
+<!-- Hadees Takhreej Assistant (Ala Hazrat Focus) -->
+<!-- Green and White Theme | Voice Input | Virtual Urdu Keyboard -->
+
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حدیث تلاش (Ala Hazrat Focus)</title>
+    <!-- Tailwind CSS CDN load karna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts for Arabic/Urdu and English -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Inter:wght@400;600;700&display=swap');
+        
+        /* Quranic font for Arabic/Hadees text */
+        .amiri { font-family: 'Amiri Quran', serif; }
+        .inter { font-family: 'Inter', sans-serif; }
+        
+        /* Custom scrollbar for output box */
+        #output-box::-webkit-scrollbar { width: 8px; }
+        #output-box::-webkit-scrollbar-thumb { background-color: #10b981; border-radius: 4px; } /* Green scrollbar */
+        #output-box::-webkit-scrollbar-track { background-color: #f1f5f9; }
+
+        .rtl-text { text-align: right; }
+        
+        /* Primary Green Color */
+        .btn-primary:hover { background-color: #059669; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); }
+        .bg-primary { background-color: #10b981; } /* Emerald 500 */
+        .text-primary { color: #10b981; }
+
+        /* Keyboard styles */
+        #urdu-keyboard {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+        .key-btn {
+            background-color: #ecfdf5; /* Light Green */
+            color: #065f46; /* Dark Green Text */
+            border: 1px solid #a7f3d0;
+            padding: 10px 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .key-btn:hover {
+            background-color: #d1fae5;
+        }
+        .key-btn.special {
+            grid-column: span 2;
+            background-color: #059669;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="inter bg-gray-100 text-gray-800 p-4 sm:p-8 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6 sm:p-8">
+        
+        <!-- Header Section -->
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-extrabold text-primary rtl-text">
+                <span class="amiri">مُعین فتاویٰ رضویہ</span> (Ala Hazrat Hadees Assistant)
+            </h1>
+            <p class="mt-2 text-gray-500 rtl-text">
+                اپنے AI کی مہارت سے حدیث کا متن (Matan) درج کریں اور **امام احمد رضا خان** کی روشنی میں معلومات حاصل کریں
+            </p>
+        </header>
+
+        <!-- Main Input Form -->
+        <main>
+            <div class="mb-6">
+                <label for="hadeesInput" class="block text-lg font-semibold mb-2 rtl-text">
+                    حدیث کا متن (Matan) یہاں درج کریں:
+                </label>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 sm:space-x-reverse">
+                    
+                    <!-- Textarea -->
+                    <textarea 
+                        id="hadeesInput" 
+                        rows="4" 
+                        class="amiri flex-grow w-full p-4 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary text-xl placeholder-gray-400 rtl-text"
+                        placeholder="جیسے: إنما الأعمال بالنيات..."
+                        aria-label="حدیث کا متن درج کریں"
+                    ></textarea>
+                    
+                    <!-- Voice Input Button -->
+                    <button 
+                        id="voiceButton" 
+                        class="bg-gray-200 text-gray-600 font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-green-100 flex items-center justify-center h-full sm:h-auto"
+                        title="آواز سے ٹائپ کریں"
+                    >
+                        <svg id="micIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.45-3c0 3.53-2.61 6.44-6 6.93V21h-2v-3.07c-3.39-.49-6-3.4-6-6.93h2c0 3.01 2.49 5.5 5.5 5.5s5.5-2.49 5.5-5.5h2z"/></svg>
+                        <svg id="micStopIcon" class="w-6 h-6 text-red-600 hidden" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-2-9c0-.55.45-1 1-1h2c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1V5zm8.45 6c0 3.53-2.61 6.44-6 6.93V21h-2v-3.07c-3.39-.49-6-3.4-6-6.93h2c0 3.01 2.49 5.5 5.5 5.5s5.5-2.49 5.5-5.5h2z"/></svg>
+                    </button>
+                    
+                    <!-- Toggle Keyboard Button -->
+                    <button 
+                        id="keyboardToggle" 
+                        class="bg-gray-200 text-gray-600 font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-green-100 flex items-center justify-center h-full sm:h-auto"
+                        title="اردو کی بورڈ کھولیں/بند کریں"
+                    >
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm10 3h-2v-2h2v2zm0-3h-2V8h2v2zm-3 3h2v2h-2v-2zm0-3h2V8h-2v2zm-7 3H4v-2h2v2z"/></svg>
+                    </button>
+                </div>
+
+                <!-- Urdu Virtual Keyboard -->
+                <div id="keyboardContainer" class="hidden mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div id="urdu-keyboard" class="amiri">
+                        <!-- Key buttons will be injected by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="flex justify-end">
+                <button 
+                    id="searchButton" 
+                    onclick="fetchHadeesInfo()"
+                    class="btn-primary bg-primary text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-green-300 shadow-lg"
+                >
+                    <svg id="searchIcon" class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <span id="buttonText">معلومات تلاش کریں</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- Results Output Area -->
+        <section class="mt-10">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4 rtl-text">
+                نتائج (Results)
+            </h2>
+            
+            <div id="output-box" class="min-h-[200px] max-h-[500px] overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg p-5 transition duration-500 shadow-inner rtl-text">
+                <p id="initialMessage" class="text-gray-400 text-center py-10">
+                    یہاں حدیث کی تفصیلات، اس کے ذرائع اور **اعلیٰ حضرت کی روشنی میں** معلومات دکھائے جائیں گے...
+                </p>
+                <!-- Loading State (Initially Hidden) -->
+                <div id="loadingIndicator" class="hidden flex flex-col items-center justify-center py-10">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p class="mt-3 text-primary font-medium">AI معلومات تلاش کر رہا ہے...</p>
+                </div>
+                
+                <div id="resultContent" class="hidden">
+                    <!-- AI generated content will be injected here -->
+                </div>
+
+                <div id="citationContainer" class="mt-6 border-t pt-4 hidden">
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">
+                        ذرائع (Sources):
+                    </h3>
+                    <ul id="sourcesList" class="space-y-2 text-sm text-green-700">
+                        <!-- Sources list will be injected here -->
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript for API Interaction, Voice Input, and Keyboard -->
+    <script>
+        // API Key ko khali chhod dein. Canvas isse khud-ba-khud bhar dega.
+        const apiKey = ""; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        const hadeesInput = document.getElementById('hadeesInput');
+        const searchButton = document.getElementById('searchButton');
+        const initialMessage = document.getElementById('initialMessage');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultContent = document.getElementById('resultContent');
+        const citationContainer = document.getElementById('citationContainer');
+        const sourcesList = document.getElementById('sourcesList');
+        const buttonText = document.getElementById('buttonText');
+        const searchIcon = document.getElementById('searchIcon');
+
+        const voiceButton = document.getElementById('voiceButton');
+        const micIcon = document.getElementById('micIcon');
+        const micStopIcon = document.getElementById('micStopIcon');
+        
+        const keyboardToggle = document.getElementById('keyboardToggle');
+        const keyboardContainer = document.getElementById('keyboardContainer');
+        const urduKeyboard = document.getElementById('urdu-keyboard');
+
+
+        // --- 1. Exponential Backoff Retry Function ---
+        async function fetchWithRetry(url, options, retries = 3) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 && i < retries - 1) { // 429: Too Many Requests
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    // Handle specific errors like 402, 400, 500
+                    const errorJson = await response.json().catch(() => ({}));
+                    const errorMessage = errorJson.error?.message || `HTTP status ${response.status}`;
+                    
+                    throw new Error(errorMessage);
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            throw new Error("API request failed after multiple retries.");
+        }
+
+        async function fetchHadeesInfo() {
+            const query = hadeesInput.value.trim();
+
+            if (!query) {
+                displayError("براہ کرم تلاش کے لیے کوئی متن درج کریں (Please enter a text to search).");
+                return;
+            }
+
+            // UI state update
+            initialMessage.classList.add('hidden');
+            resultContent.classList.add('hidden');
+            citationContainer.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
+            searchButton.disabled = true;
+            buttonText.textContent = "تلاش ہو رہی ہے...";
+            searchIcon.classList.add('hidden');
+
+
+            // System Instruction (Ala Hazrat Focus)
+            const systemPrompt = `
+                Act as a highly knowledgeable Islamic research assistant focusing specifically on the school of thought of Imam Ahmad Raza Khan Barelvi (Ala Hazrat). 
+                Your task is to search for the meaning, context (takhreej), and classification/ruling of the provided Hadees Matan (text). 
+                Crucially, reference or cite any relevant work from Ala Hazrat (e.g., Fatawa Razawiyya, etc.) or rulings made within his school of thought, if available in the search results.
+                Provide a structured, detailed answer in Urdu (using RTL text for clarity) based on the search results.
+                Structure the output using Markdown with the following sections:
+                1. متن (Matan)
+                2. معنی کا خلاصہ (Summary of Meaning)
+                3. تخریج (Takhreej/Sources) - State the book and chapter where it is generally found.
+                4. اعلیٰ حضرت کی روشنی میں (In the Light of Ala Hazrat) - Provide relevant references, interpretations, or rulings from this school of thought.
+                5. درجہ بندی (Classification/Grading) - State the general ruling (e.g., Sahih, Hasan, Da'if) as found in sources.
+            `;
+
+            // User Query with specific constraint
+            const userQuery = `Search for the Hadees with the text (Matan) starting with: "${query}". Provide the full Hadees, its meaning, Takhreej (sources), the perspective or reference related to Ala Hazrat (Imam Ahmad Raza Khan), and general classification in Urdu.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                // Google Search grounding enable karna
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await fetchWithRetry(API_URL, options);
+                const result = await response.json();
+                
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+
+                    displayResult(text, sources);
+
+                } else {
+                    displayError("معاف کیجئے، AI کوئی متعلقہ معلومات تلاش نہیں کر سکا (Sorry, the AI could not find relevant information).");
+                }
+
+            } catch (error) {
+                console.error("API Error:", error);
+                let message = error.message;
+
+                // Specific check for 402/API Key issue
+                if (message.includes('402') || message.includes('API key not valid')) {
+                    message = `معاف کیجئے! API میں خرابی (Error 402/Key Issue). براہ کرم یقینی بنائیں کہ آپ کا API key aur billing theek se set hai, ya ise Canvas platform par use karein. (Please ensure your API key and billing are correctly set, or use it on the Canvas platform).`;
+                } else if (message.includes('400')) {
+                    message = `غلط درخواست (Bad Request): آپ کی تلاش کی درخواست میں مسئلہ ہے۔`;
+                }
+
+                displayError(`تلاش میں خرابی: ${message}`);
+            } finally {
+                // UI state reset
+                loadingIndicator.classList.add('hidden');
+                searchButton.disabled = false;
+                buttonText.textContent = "معلومات تلاش کریں";
+                searchIcon.classList.remove('hidden');
+            }
+        }
+
+        function displayResult(text, sources) {
+            resultContent.innerHTML = parseMarkdown(text);
+            resultContent.classList.remove('hidden');
+
+            // Source/Citation display
+            sourcesList.innerHTML = '';
+            if (sources.length > 0) {
+                sources.forEach((source, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'rtl-text';
+                    listItem.innerHTML = `
+                        <a href="${source.uri}" target="_blank" rel="noopener noreferrer" class="hover:underline hover:text-green-800">
+                            ${index + 1}. ${source.title || 'Unknown Source'}
+                        </a>
+                    `;
+                    sourcesList.appendChild(listItem);
+                });
+                citationContainer.classList.remove('hidden');
+            } else {
+                citationContainer.classList.add('hidden');
+            }
+        }
+
+        function displayError(message) {
+            resultContent.innerHTML = `<p class="text-red-600 text-center font-bold py-10 p-4 bg-red-50 border border-red-200 rounded-lg">${message}</p>`;
+            resultContent.classList.remove('hidden');
+            citationContainer.classList.add('hidden');
+        }
+        
+        // Simple Markdown Parser
+        function parseMarkdown(markdownText) {
+            let html = markdownText;
+            
+            // Replace markdown headers with HTML (H4 is used in prompt)
+            html = html.replace(/^#### (.*)$/gm, '<h4 class="text-xl font-bold mt-4 mb-2 text-primary border-b border-green-200 pb-1 rtl-text">$1</h4>');
+            html = html.replace(/^### (.*)$/gm, '<h3 class="text-xl font-bold mt-4 mb-2 text-primary border-b border-green-200 pb-1 rtl-text">$1</h3>');
+            html = html.replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-4 mb-2 text-gray-700 rtl-text">$1</h2>');
+
+            // Replace bold text
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert list items to HTML structure
+            html = html.replace(/^\* (.*)$/gm, '<li class="rtl-text">$1</li>');
+            html = html.replace(/^- (.*)$/gm, '<li class="rtl-text">$1</li>');
+
+            // Group list items into <ul>
+            if (html.includes('<li class="rtl-text">')) {
+                // This regex groups consecutive <li> items into a <ul> block
+                html = html.replace(/(<li class="rtl-text">.*?<\/li>)+/gs, (match) => 
+                    `<ul class="list-disc list-inside space-y-1 mb-4 mr-6 text-gray-700">${match}</ul>`
+                );
+            }
+            
+            // Add paragraphs for remaining text separated by double newlines
+            html = html.split('\n\n').map(p => {
+                // If it's a list or header, leave it alone. Otherwise wrap in <p>.
+                if (p.startsWith('<h') || p.startsWith('<ul')) {
+                    return p;
+                }
+                // Handle single newlines within paragraphs
+                return p.trim() ? `<p class="mb-3 rtl-text">${p.replace(/\n/g, '<br>')}</p>` : '';
+            }).join('');
+
+
+            return html;
+        }
+
+
+        // --- 2. Voice Typing Implementation ---
+        let recognition = null;
+        
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; // Taake woh bolna bandh na kare
+            recognition.interimResults = true; // Taake woh real-time result dikhata rahe
+
+            recognition.onstart = function() {
+                micIcon.classList.add('hidden');
+                micStopIcon.classList.remove('hidden');
+                voiceButton.classList.add('bg-red-100', 'text-red-600', 'animate-pulse');
+                voiceButton.title = "سن رہا ہے... ٹائپنگ روکنے کے لیے کلک کریں";
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                // Final result ko input mein daalna, aur existing text ko rakhna
+                hadeesInput.value += finalTranscript;
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                voiceButton.classList.remove('bg-red-100', 'text-red-600', 'animate-pulse');
+                micIcon.classList.remove('hidden');
+                micStopIcon.classList.add('hidden');
+                voiceButton.title = "آواز سے ٹائپ کریں (Error)";
+                // displayError(`آواز سے ٹائپنگ میں خرابی: ${event.error}`); // Do not use displayError here as it clears main content
+                alert(`آواز سے ٹائپنگ میں خرابی: ${event.error}. Tafseel console mein hai.`);
+            };
+
+            recognition.onend = function() {
+                voiceButton.classList.remove('bg-red-100', 'text-red-600', 'animate-pulse');
+                micIcon.classList.remove('hidden');
+                micStopIcon.classList.add('hidden');
+                voiceButton.title = "آواز سے ٹائپ کریں";
+            };
+
+            voiceButton.addEventListener('click', () => {
+                try {
+                    if (voiceButton.classList.contains('bg-red-100')) {
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                } catch (e) {
+                    // Agar pehle se chal raha ho to doosri baar start karne se error aata hai, isliye try/catch
+                    console.warn("Recognition already started or error:", e);
+                }
+            });
+
+        } else {
+            // Agar browser support na kare
+            voiceButton.disabled = true;
+            voiceButton.title = "آپ کا براؤزر آواز کی پہچان کو سپورٹ نہیں کرتا۔";
+        }
+
+
+        // --- 3. Urdu Virtual Keyboard Implementation ---
+        const urduKeys = [
+            'ا', 'ب', 'ت', 'ث', 'ج', 'ح',
+            'خ', 'د', 'ذ', 'ر', 'ز', 'س',
+            'ش', 'ص', 'ض', 'ط', 'ظ', 'ع',
+            'غ', 'ف', 'ق', 'ک', 'ل', 'م',
+            'ن', 'و', 'ہ', 'ی', 'ے', 'ئ',
+            'ء', 'ً', 'ٌ', 'ٍ', 'َ', 'ِ',
+            'ُ', 'ّ', 'ْ', 'ِف', 'ﷲ', 'محمد',
+            'ﷺ', 'رح', 'رض', 'ؓ', '،', '.',
+            'space', 'backspace'
+        ];
+
+        urduKeys.forEach(key => {
+            const keyBtn = document.createElement('button');
+            keyBtn.textContent = key === 'space' ? 'جگہ' : key === 'backspace' ? 'حذف کریں' : key;
+            keyBtn.className = `key-btn ${key === 'space' ? 'special' : ''} ${key === 'backspace' ? 'special' : ''} amiri`;
+            keyBtn.type = 'button';
+            
+            keyBtn.addEventListener('click', () => {
+                const textarea = hadeesInput;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                
+                let valueToInsert = key;
+                if (key === 'space') {
+                    valueToInsert = ' ';
+                } else if (key === 'backspace') {
+                    if (start === end) {
+                        if (start > 0) {
+                            textarea.value = textarea.value.substring(0, start - 1) + textarea.value.substring(end);
+                            textarea.selectionStart = textarea.selectionEnd = start - 1;
+                        }
+                        return;
+                    } else {
+                        valueToInsert = ''; // Delete selected text
+                    }
+                }
+
+                textarea.value = textarea.value.substring(0, start) + valueToInsert + textarea.value.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + valueToInsert.length;
+                textarea.focus();
+            });
+
+            urduKeyboard.appendChild(keyBtn);
+        });
+
+        keyboardToggle.addEventListener('click', () => {
+            keyboardContainer.classList.toggle('hidden');
+            hadeesInput.focus();
+        });
+
+
+        // Set initial cursor focus for better usability
+        window.onload = () => {
+            hadeesInput.focus();
+        };
+
+    </script>
+</body>
+</html>
